@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-demcare-dev-214920-authRole",
+      "UnauthRoleArn": "arn:aws:iam::488507369383:role/amplify-demcare-dev-214920-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::488507369383:role/amplify-demcare-dev-214920-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-demcare-dev-214920-deployment",
+      "UnauthRoleName": "amplify-demcare-dev-214920-unauthRole",
+      "StackName": "amplify-demcare-dev-214920",
+      "StackId": "arn:aws:cloudformation:us-east-1:488507369383:stack/amplify-demcare-dev-214920/daeb2800-2a3d-11ee-aba2-0e901510dab7",
+      "AmplifyAppId": "d2ardgvzvi3y0r"
+    },
+    "categories": {
+      "auth": {
+        "demcare0599fa22": {}
+      },
+      "storage": {
+        "s3ac81eee0": {}
+      }
+    }
+  }
+}
