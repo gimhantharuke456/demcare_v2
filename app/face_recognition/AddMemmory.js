@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   Text,
   View,
@@ -7,26 +7,25 @@ import {
   Image,
   Platform,
   Button,
-  ScrollView,
   Dimensions,
   FlatList,
   useWindowDimensions,
-} from 'react-native';
-import Constants from 'expo-constants';
-import { Camera, CameraType } from 'expo-camera';
-import * as MediaLibrary from 'expo-media-library';
-import { MaterialIcons } from '@expo/vector-icons';
-import Buttonn from '../../components/Buttonn'
-import { TextInput } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { RNS3 } from 'react-native-aws3';
-
-import { Amplify, Storage } from 'aws-amplify';
-import awsconfig from '../../src/aws-exports';
+} from "react-native";
+import Constants from "expo-constants";
+import { Camera, CameraType } from "expo-camera";
+import * as MediaLibrary from "expo-media-library";
+import { MaterialIcons } from "@expo/vector-icons";
+import Buttonn from "../../components/Buttonn";
+import { TextInput } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { RNS3 } from "react-native-aws3";
+import { ScrollView } from "react-native-virtualized-view";
+import { Amplify, Storage } from "aws-amplify";
+import awsconfig from "../../src/aws-exports";
 Amplify.configure(awsconfig);
 
 import MainDesign5 from "../../components/MainDesign5";
-
+import { getFromStorage } from "../../services/local_storage_service";
 
 export default function AddMemmory() {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
@@ -34,20 +33,20 @@ export default function AddMemmory() {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const cameraRef = useRef(null);
-  const [name, setName] = useState('');
-  const [relation, setRelation] = useState('');
+  const [name, setName] = useState("");
+  const [relation, setRelation] = useState("");
   const [pictureUri, setPictureUri] = useState(null);
   const [imagee, setImagee] = useState(null);
   const [imgename, setimgename] = useState(null);
   const [result, setResult] = useState(null);
-  const[images, setImages] = useState([]);
- // const {width} = useWindowDimensions();
+  const [images, setImages] = useState([]);
+  // const {width} = useWindowDimensions();
 
   useEffect(() => {
     (async () => {
       MediaLibrary.requestPermissionsAsync();
       const cameraStatus = await Camera.requestCameraPermissionsAsync();
-      setHasCameraPermission(cameraStatus.status === 'granted');
+      setHasCameraPermission(cameraStatus.status === "granted");
     })();
   }, []);
 
@@ -65,132 +64,122 @@ export default function AddMemmory() {
     }
   };
 
-//...................................................................
+  //...................................................................
 
-const pickMultipleImages = async () => {
-  // No permissions request is necessary for launching the image library
-  let result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.All,
-    allowsMultipleSelection: true,
-    selectionLimit: 10,
-    aspect: [4, 3],
-    quality: 1,
-  });
-  console.log(result);
-  if (!result.canceled) {
-    const selectedImages = result.assets.map((asset) => asset.uri);
-    setResult(result);
-    setImages(selectedImages);
-  }
-};
-
-
-
-
-
-const uploadImagesToS3 = async () => {
-  await Promise.all(
-    images.map(async (imageUri) => {
-      const fileName = imageUri.split('/').pop();
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-//value of the patient needs to replace with pavani using local storage
-      try {
-        await Storage.put(`Memory/pavani/${relation}/${name}/${fileName}`, blob, {
-          contentType: 'image/jpeg',
-        });
-        console.log('Image uploaded successfully:', fileName);
-      } catch (error) {
-        console.log('Error uploading image:', error);
-      }
-    })
-  );
-};
-//...................................................................
-
-const uploadfile = async (image) => {
-
-//value of the patient needs to replace with pavani using local storage
-
-  const options = {
-    keyPrefix: `Relations/pavani/${relation}/${name}/`,
-    bucket: "relationphotos",
-    region: "us-east-1",
-    accessKey: "AKIAXDPKO46TRSLLQOF2",
-    secretKey: "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",
-    successActionStatus: 201,
-    awsUrl: "s3.amazonaws.com",
+  const pickMultipleImages = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    console.log(result);
+    if (!result.canceled) {
+      const selectedImages = result.assets.map((asset) => asset.uri);
+      setResult(result);
+      setImages(selectedImages);
+    }
   };
-    
-    console.log('options--------------- ', options);
+
+  const uploadImagesToS3 = async () => {
+    await Promise.all(
+      images.map(async (imageUri) => {
+        const fileName = imageUri.split("/").pop();
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        //value of the patient needs to replace with pavani using local storage
+        try {
+          const n = await getFromStorage("email").split("@")[0];
+          await Storage.put(
+            `Memory/{n}/${relation}/${name}/${fileName}`,
+            blob,
+            {
+              contentType: "image/jpeg",
+            }
+          );
+          console.log("Image uploaded successfully:", fileName);
+        } catch (error) {
+          console.log("Error uploading image:", error);
+        }
+      })
+    );
+  };
+  //...................................................................
+
+  const uploadfile = async (image) => {
+    //value of the patient needs to replace with pavani using local storage
+    const n = await getFromStorage("email").split("@")[0];
+    const options = {
+      keyPrefix: `Relations/${n}/${relation}/${name}/`,
+      bucket: "relationphotos",
+      region: "us-east-1",
+      accessKey: "AKIAXDPKO46TRSLLQOF2",
+      secretKey: "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",
+      successActionStatus: 201,
+      awsUrl: "s3.amazonaws.com",
+    };
+
+    console.log("options--------------- ", options);
 
     const file = {
       // `uri` can also be a file system path (i.e. file://)
       uri: image,
       name: `my-image-filename${Math.random()}.jpg`,
-      type: "image/jpeg"
-    }
-    console.log('filee --------------- ', file);
+      type: "image/jpeg",
+    };
+    console.log("filee --------------- ", file);
     setimgename(file.name);
 
     //const img = await fetchImageUrI(file.uri);
-    console.log('hello')
-
+    console.log("hello");
 
     return RNS3.put(file, options)
       .then((res) => {
-        
-        if (res.status !== 201){
+        if (res.status !== 201) {
           throw new Error("Failed to upload image to S3");
-      }
-          
-        else {
-          console.log(
-            "Successfully uploaded image to s3. s3 bucket url: "
-          );
+        } else {
+          console.log("Successfully uploaded image to s3. s3 bucket url: ");
           //fetchPatientDetails();
-
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
       });
   };
 
-
-
   const savePicture = () => {
     if (image) {
-      if (name.trim() === '' || relation.trim() === '') {
-        alert('Please fill in all fields');
+      if (name.trim() === "" || relation.trim() === "") {
+        alert("Please fill in all fields");
         return;
       }
       try {
         const asset = MediaLibrary.createAssetAsync(image, {
-          album: 'Camera App',
+          album: "Camera App",
           metadata: {
             name,
             relation,
           },
         });
-        alert('Picture saved!');
-        console.log('imageeeeeeeeeee', image);
+        alert("Picture saved!");
+        console.log("imageeeeeeeeeee", image);
         uploadfile(image);
-        console.log('result ----------------', result);
+        console.log("result ----------------", result);
         if (result !== null) {
           uploadImagesToS3();
         }
-        alert('Picture saved!');
+        alert("Picture saved!");
         setResult(null);
         setName(null);
         setRelation(null);
         setImagee(null);
-        
+
         setImage(null);
-        console.log('ffffffffffffffffffffff');
-        
-        
-        console.log('saved successfully');
+        console.log("ffffffffffffffffffffff");
+
+        console.log("saved successfully");
       } catch (error) {
         console.log(error);
       }
@@ -204,152 +193,149 @@ const uploadfile = async (image) => {
   return (
     <MainDesign5 isHome={true} isCamera={false} footer={<View />}>
       <ScrollView>
-    <View style={styles.container}>
-    <View style={styles.cameraContainer}>
-      {!image ? (
-        <Camera
-          style={styles.camera}
-          type={type}
-          ref={cameraRef}
-          flashMode={flash}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              paddingHorizontal: 30,
-            }}
-          >
-                        <View style={styles.flashbutton}>
-            <Buttonn
-              title=""
-              icon="retweet"
-              onPress={() => {
-                setType(
-                  type === CameraType.back ? CameraType.front : CameraType.back
-                );
-              }}
-            />
+        <View style={styles.container}>
+          <View style={styles.cameraContainer}>
+            {!image ? (
+              <Camera
+                style={styles.camera}
+                type={type}
+                ref={cameraRef}
+                flashMode={flash}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    paddingHorizontal: 30,
+                  }}
+                >
+                  <View style={styles.flashbutton}>
+                    <Buttonn
+                      title=""
+                      icon="retweet"
+                      onPress={() => {
+                        setType(
+                          type === CameraType.back
+                            ? CameraType.front
+                            : CameraType.back
+                        );
+                      }}
+                    />
 
-            <Buttonn
-              onPress={() =>
-                setFlash(
-                  flash === Camera.Constants.FlashMode.off
-                    ? Camera.Constants.FlashMode.on
-                    : Camera.Constants.FlashMode.off
-                )
-              }
-              icon="flash"
-              color={flash === Camera.Constants.FlashMode.off ? 'gray' : '#fff'}
-            />
-            </View>
+                    <Buttonn
+                      onPress={() =>
+                        setFlash(
+                          flash === Camera.Constants.FlashMode.off
+                            ? Camera.Constants.FlashMode.on
+                            : Camera.Constants.FlashMode.off
+                        )
+                      }
+                      icon="flash"
+                      color={
+                        flash === Camera.Constants.FlashMode.off
+                          ? "gray"
+                          : "#fff"
+                      }
+                    />
+                  </View>
+                </View>
+              </Camera>
+            ) : (
+              <View style={styles.allincamviwe}>
+                <Image source={{ uri: image }} style={styles.camera} />
+              </View>
+            )}
           </View>
-        </Camera>
-       
-      ) : (
-        <View style={styles.allincamviwe}>
-        <Image source={{ uri: image }} style={styles.camera} />
+          <View style={styles.controls}>
+            {image ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 50,
+                }}
+              >
+                <View style={styles.card}>
+                  <View style={styles.dataSection}>
+                    <Text style={styles.label}>Name: </Text>
+                    <TextInput
+                      // style={styles.input}
+                      placeholder="Name"
+                      value={name}
+                      onChangeText={setName}
+                      style={styles.input}
+                    />
+                  </View>
+                  <View style={styles.dataSection}>
+                    <Text style={styles.label}>Relation: </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Relation"
+                      value={relation}
+                      onChangeText={setRelation}
+                    />
+                  </View>
+                  <View style={styles.but}>
+                    <Buttonn
+                      title="Re-take"
+                      onPress={() => setImage(null)}
+                      icon="retweet"
+                    />
+                    <Buttonn title="Save" onPress={savePicture} icon="check" />
+                  </View>
+
+                  <View style={styles.containerr}>
+                    <Button title="Pick Images" onPress={pickMultipleImages} />
+                    <FlatList
+                      data={images}
+                      keyExtractor={(item, index) => index.toString()}
+                      renderItem={({ item }) => (
+                        <Image source={{ uri: item }} style={styles.imagee} />
+                      )}
+                    />
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.camcontrol}>
+                <Buttonn
+                  title="Take a picture"
+                  onPress={takePicture}
+                  icon="camera"
+                />
+              </View>
+            )}
+          </View>
         </View>
-      )}
- </View>
-      <View style={styles.controls}>
-        
-        {image ? (
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              paddingHorizontal: 50,
-            }}
-          >
-            <View style={styles.card}>
-            <View style={styles.dataSection}>
-            <Text style={styles.label}>Name: </Text>
-      <TextInput
-        // style={styles.input}
-        placeholder="Name"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
-      </View>
-      <View style={styles.dataSection}>
-      <Text style={styles.label}>Relation: </Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Relation"
-        value={relation}
-        onChangeText={setRelation}
-      />
-</View>
-    <View style={styles.but}>
-            <Buttonn
-              title="Re-take"
-              onPress={() => setImage(null)}
-              icon="retweet"
-            />
-            <Buttonn title="Save" onPress={savePicture} icon="check" />
-            </View>
-
-
-
-
-            <View style={styles.containerr}>
-      <Button title="Pick Images" onPress={pickMultipleImages} />
-      <FlatList
-        data={images}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => <Image source={{ uri: item }} style={styles.imagee} />}
-      />
-    </View>
-
-
-
-
-
-
-          </View>
-          </View>
-        ) : (
-          
-          <View style={styles.camcontrol}>
-            
-          <Buttonn title="Take a picture" onPress={takePicture} icon="camera" />
-          </View>
-          
-        )}
-      </View>
-    </View>
-    </ScrollView>
+      </ScrollView>
     </MainDesign5>
   );
 }
 
 const styles = StyleSheet.create({
-  but : {
+  but: {
     height: 40,
     borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'black',
-    marginBottom : 10,
-    marginLeft : 40,
-    marginRight: 40
-    
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "black",
+    marginBottom: 10,
+    marginLeft: 40,
+    marginRight: 40,
   },
   flashbutton: {
     height: 40,
     borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
 
-    marginTop : 500,
-    marginLeft : 40,
+    marginTop: 500,
+    marginLeft: 40,
     marginRight: 40,
     width: 150,
-    height: 50
+    height: 50,
   },
   container: {
     flex: 1,
@@ -359,35 +345,35 @@ const styles = StyleSheet.create({
   controls: {
     marginTop: 20,
     flex: 0.5,
-    marginLeft: -40
+    marginLeft: -40,
   },
   camcontrol: {
     height: 50,
     borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'black',
-    marginBottom : 10,
-    width : 200,
-    marginTop : 20,
-    marginLeft: 30
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "black",
+    marginBottom: 10,
+    width: 200,
+    marginTop: 20,
+    marginLeft: 30,
   },
 
-  allincamviwe : {
-    marginLeft: -38
+  allincamviwe: {
+    marginLeft: -38,
   },
   Buttonn: {
     height: 40,
     borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   text: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 16,
-    color: '#E9730F',
+    color: "#E9730F",
     marginLeft: 10,
   },
   input: {
@@ -405,7 +391,6 @@ const styles = StyleSheet.create({
     width: 370,
     height: 550,
     marginTop: 40,
-    
   },
 
   cameraa: {
@@ -414,7 +399,6 @@ const styles = StyleSheet.create({
     width: 200,
     height: 300,
     marginTop: 0,
-    
   },
   topControls: {
     flex: 1,
@@ -457,18 +441,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   Text: {
-    color: '#fff',
+    color: "#fff",
   },
   containerr: {
     flex: 1,
     padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   imagee: {
     width: 200,
     height: 200,
-    resizeMode: 'cover',
+    resizeMode: "cover",
     marginBottom: 8,
   },
 });

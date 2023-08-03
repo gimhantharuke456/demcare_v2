@@ -12,7 +12,7 @@ const Title = ({ is_login = false }) => {
       {!is_login && <TouchableOpacity
         onPress={async() => {
          await auth.signOut();
-router.push("/LoginPage")
+router.push("/");
         }}
       >
       <AntDesign name="logout" size={24} color="black" />
