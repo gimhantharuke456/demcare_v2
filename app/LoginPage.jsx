@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { forgetPassword, signin } from "../services/auth_service";
 import { getFromStorage } from "../services/local_storage_service";
 import { isValidEmail } from "../services/email_validator";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const LoginPage = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -60,10 +61,13 @@ const LoginPage = () => {
                   const isPatient = await getFromStorage("USER_TYPE");
                   const result = await signin(email, password);
                   console.log(result);
+                  AsyncStorage.setItem("email", email);
                   if(result){
                     if(isPatient === "PATIENT"){
+
                       router.push("/PatientHome");
                     }else{
+
                       router.push("/CareGiverHome")
                     }
                   }else{
