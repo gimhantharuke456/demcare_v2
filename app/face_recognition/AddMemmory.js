@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  ScrollView,
   Text,
   View,
   StyleSheet,
@@ -23,10 +24,11 @@ import { RNS3 } from 'react-native-aws3';
 import { Amplify, Storage } from 'aws-amplify';
 import awsconfig from '../../src/aws-exports';
 Amplify.configure(awsconfig);
-import { ScrollView } from "react-native-virtualized-view";
 
 import MainDesign5 from "../../components/MainDesign5";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import * as FaceDetector from "expo-face-detector";
 
 
 export default function AddMemmory() {
@@ -44,6 +46,7 @@ export default function AddMemmory() {
   const[images, setImages] = useState([]);
   const[email, setEmail] = useState();
  // const {width} = useWindowDimensions();
+ const [imageee, setImageee] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -56,6 +59,25 @@ export default function AddMemmory() {
       setEmail(name);
     })();
   }, []);
+
+  const pickImageeeee = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 5],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImages(null);
+      
+      setPictureUri(result.assets[0].uri);
+      setImage(result.assets[0].uri);
+    }
+  };
 
   const takePicture = async () => {
     if (cameraRef) {
@@ -71,10 +93,8 @@ export default function AddMemmory() {
     }
   };
 
-//...................................................................
-
 const pickMultipleImages = async () => {
-  // No permissions request is necessary for launching the image library
+  
   let result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.All,
     allowsMultipleSelection: true,
@@ -89,10 +109,6 @@ const pickMultipleImages = async () => {
     setImages(selectedImages);
   }
 };
-
-
-
-
 
 const uploadImagesToS3 = async () => {
   await Promise.all(
@@ -271,58 +287,57 @@ console.log('emaillllllllllllllllllllllllllllllllllllllllllllllllllll', email);
           >
             <View style={styles.card}>
             <View style={styles.dataSection}>
-            <Text style={styles.label}>Name: </Text>
+            <Text style={styles.label}>Person Name : </Text>
       <TextInput
         // style={styles.input}
-        placeholder="Name"
+        placeholder="Person Name"
         value={name}
         onChangeText={setName}
         style={styles.input}
       />
       </View>
       <View style={styles.dataSection}>
-      <Text style={styles.label}>Relation: </Text>
+      <Text style={styles.label}>Relationship   : </Text>
       <TextInput
         style={styles.input}
-        placeholder="Relation"
+        placeholder="Relationship of the person"
         value={relation}
         onChangeText={setRelation}
       />
 </View>
     <View style={styles.but}>
             <Buttonn
-              title="Re-take"
+              title="Re-take or Re-select"
               onPress={() => setImage(null)}
               icon="retweet"
             />
-            <Buttonn title="Save" onPress={savePicture} icon="check" />
             </View>
-
-
-
-
             <View style={styles.containerr}>
       <Button title="Pick Images" onPress={pickMultipleImages} />
       <FlatList
+        scrollEnabled={false}
         data={images}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => <Image source={{ uri: item }} style={styles.imagee} />}
       />
     </View>
+            <View style={styles.but}>
+            <Buttonn title="Save" onPress={savePicture} icon="check" />
+            </View>
 
-
-
-
-
-
-          </View>
+           
+         </View>
           </View>
         ) : (
           
-          <View style={styles.camcontrol}>
-            
-          <Buttonn title="Take a picture" onPress={takePicture} icon="camera" />
-          </View>
+          <><View style={styles.camcontrol}>
+
+                  <Buttonn title="Take a picture" onPress={takePicture} icon="camera" />
+                </View><View style={styles.camcontroll}>
+                    <Button title="Pick an image from camera roll" onPress={pickImageeeee} />
+                    {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
+                  </View></>
+          
           
         )}
       </View>
@@ -339,7 +354,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'black',
+    backgroundColor: '#6495ED',
     marginBottom : 10,
     marginLeft : 40,
     marginRight: 40
@@ -374,7 +389,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'black',
+    backgroundColor: '#6082B6',
+    marginBottom : 10,
+    width : 200,
+    marginTop : 20,
+    marginLeft: 30
+  },
+  camcontroll: {
+    height: 60,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
     marginBottom : 10,
     width : 200,
     marginTop : 20,
@@ -394,7 +421,8 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#E9730F',
+    //color: '#E9730F',
+    color: '#0047AB',
     marginLeft: 10,
   },
   input: {
@@ -404,6 +432,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 4,
+    color: '#0047AB',
     marginTop: 8,
   },
   camera: {
@@ -449,6 +478,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 18,
     lineHeight: 36,
+    color: '#6495ED',
     paddingVertical: 5,
   },
   cameraWrapper: {
