@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as Speech from 'expo-speech';
 import { Text, 
+  ScrollView,
   View, 
   StyleSheet, 
   TouchableOpacity, 
@@ -8,7 +9,8 @@ import { Text,
   Platform, 
   FlatList, 
   Button, 
-  Dimensions} from 'react-native';
+  Dimensions,
+  ActivityIndicator} from 'react-native';
 import Constants from 'expo-constants';
 import { Camera, CameraType } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
@@ -17,7 +19,6 @@ import Buttonn from '../../components/Buttonn'
 import { TextInput } from 'react-native';
 import { RNS3 } from 'react-native-aws3';
 import axios from 'axios';
-import { ScrollView } from "react-native-virtualized-view";
 
 import { Amplify, Storage } from 'aws-amplify';
 import awsconfig from '../../src/aws-exports';
@@ -45,7 +46,7 @@ export default function Recognitionpage() {
   const [spkey, setSpkey] = useState('');
   const [images, setImages] = useState([]);
   const[email, setEmail] = useState();
-
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -75,6 +76,7 @@ const fetchImagesFromS3 = async (nameValue, relationValue) => {
       console.log("hello");
     for (const item of response.results) {
       const url = await Storage.get(item.key);
+      console.log(url);
       imageUrls.push(url);
     }
 
@@ -88,7 +90,11 @@ const fetchImagesFromS3 = async (nameValue, relationValue) => {
 
 const speak = () => {
   if(name == null && relationship == null){
-    const thingToSay = `Please enter the Save button`;
+    const thingToSay = `Please press the Save button`;
+    Speech.speak(thingToSay);
+  }
+  else if(name === 'undefined' && relationship === 'undefined'){
+    const thingToSay = `I don't have any recods of this person`;
     Speech.speak(thingToSay);
   }
   else {
@@ -159,11 +165,28 @@ const fetchPatientDetails =  (filenm) => {
     //pavani should change with pation name that is getting from local storage
     const res =  axios.get(`https://bgin35dpfio3nrpnz3gvgctwei0qqiot.lambda-url.us-east-1.on.aws/api?inputfname=${filenm}&token=RRshJy4beYdlNbu&personname=${email}`)
     .then(async (res) => {
+      setIsLoading(false); // End loading
       setRelation(res.data.Output);
       console.log('correct----------------------------');
       console.log('Data - ', res.data);
       console.log('Data new - ', res.data.Output);
       console.log("relation------------------------------------", relation);
+
+      
+      const regexxx = /\{"status": "([^"]+)"\}/;
+      const matchhh = regexxx.exec(res.data.Output);
+      console.log(matchhh);
+
+      const statusValue = '';
+
+      if (matchhh && matchhh.length >= 2) {
+         statusValue = matchhh[1];
+        console.log("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk", statusValue); // Output: NoRelations
+      }
+        if(statusValue === 'NoRelations'){
+          setName('undefined');
+          setrelationship('undefined');
+        }else {
 
       const regex = /"name": "([^"]+)"/;
       const regexx = /"relation": "([^"]+)"/;
@@ -174,6 +197,7 @@ const fetchPatientDetails =  (filenm) => {
 
       const match = regex.exec(res.data.Output);
       const matchh = regexx.exec(res.data.Output);
+      
       if ((match && match.length > 1) && (matchh && matchh.length > 1)) {
         
         const nameValue = match[1];
@@ -192,9 +216,15 @@ const fetchPatientDetails =  (filenm) => {
         //nameValue and relation values need to pass as the argument for the fetchImagesFromS3 method
         fetchImagesFromS3(nameValue, relationValue);
       }
+    }
+    
     })
     .catch((err) => {
+      setIsLoading(false); // End loading
+      setName('undefined');
+      setrelationship('undefined');
       alert(err.msg);
+
     });
 };
 
@@ -223,6 +253,7 @@ const fetchPatientDetails =  (filenm) => {
     if (image) {
 
       try {
+        setIsLoading(true); 
         const asset = await MediaLibrary.createAssetAsync(image, {
           album: 'Camera App',
           metadata: {
@@ -248,122 +279,119 @@ const fetchPatientDetails =  (filenm) => {
 
   return (
     <MainDesign5 isHome={true} isCamera={false} footer={<View />}>
-      <ScrollView>
-    <View style={styles.container}>
-    <View style={styles.cameraContainer}>
-      {!image ? (
-        <Camera
-          style={styles.camera}
-          type={type}
-          ref={cameraRef}
-          flashMode={flash}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              paddingHorizontal: 30,
-            }}
-          >
-            <View style={styles.flashbutton}>
-            <Buttonn
-              title=""
-              icon="retweet"
-              onPress={() => {
-                setType(
-                  type === CameraType.back ? CameraType.front : CameraType.back
-                );
-              }}
-            />
-            <Buttonn
-              onPress={() =>
-                setFlash(
-                  flash === Camera.Constants.FlashMode.off
-                    ? Camera.Constants.FlashMode.on
-                    : Camera.Constants.FlashMode.off
-                )
-              }
-              icon="flash"
-              color={flash === Camera.Constants.FlashMode.off ? 'gray' : '#fff'}
-            />
-          </View>
-          </View>
-        </Camera>
-      ) : (
-        <View style={styles.allincamviwe}>
-        <Image source={{ uri: image }} style={styles.camera} />
+    <ScrollView>
+      <View style={styles.container}>
+        <View style={styles.cameraContainer}>
+          {!image ? (
+            <Camera
+              style={styles.camera}
+              type={type}
+              ref={cameraRef}
+              flashMode={flash}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  paddingHorizontal: 30,
+                }}
+              >
+                <View style={styles.flashbutton}>
+                  <Buttonn
+                    title=""
+                    icon="retweet"
+                    onPress={() => {
+                      setType(
+                        type === CameraType.back
+                          ? CameraType.front
+                          : CameraType.back
+                      );
+                    }}
+                  />
+                  <Buttonn
+                    onPress={() =>
+                      setFlash(
+                        flash === Camera.Constants.FlashMode.off
+                          ? Camera.Constants.FlashMode.on
+                          : Camera.Constants.FlashMode.off
+                      )
+                    }
+                    icon="flash"
+                    color={
+                      flash === Camera.Constants.FlashMode.off
+                        ? 'gray'
+                        : '#fff'
+                    }
+                  />
+                </View>
+              </View>
+            </Camera>
+          ) : (
+            <View style={styles.allincamviwe}>
+              <Image source={{ uri: image }} style={styles.camera} />
+            </View>
+          )}
         </View>
-      )}
-</View>
-      <View style={styles.controls}>
-        {image ? (
-          <View
-            style={{
+        <View style={styles.controls}>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#000" />
+          ) : image ? (
+            <View style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
               paddingHorizontal: 50,
-            }}
-          >
-           {/* <View style={styles.but}>
-            <Buttonn
-              title="Re-take"
-              onPress={() => setImage(null)}
-              icon="retweet"
-            />
-            <Buttonn title="Save" onPress={savePicture} icon="check" />
-            </View> */}
+            }}>
+              <View style={styles.card}>
+              <View style={styles.but}>
+                <Buttonn
+                  title="Re-take"
+                  onPress={() => setImage(null)}
+                  icon="retweet"
+                />
+               </View>
+              <View style={styles.but}>
+                <Buttonn title="Save" onPress={savePicture} icon="check" />
+              </View>
+              <View style={styles.dataSection}>
+                <Text style={styles.label}>Name: {name}</Text>
+              </View>
+              <View style={styles.dataSection}>
+                <Text style={styles.label}>Relation: {relationship}</Text>
+              </View>
 
-            <View style={styles.card}>
-            <View style={styles.but}>
-            <Buttonn
-              title="Re-take"
-              onPress={() => setImage(null)}
-              icon="retweet"
-            />
-            </View>
-            <View style={styles.but}>
-            <Buttonn title="Save" onPress={savePicture} icon="check" />
-            </View>
-            <View style={styles.dataSection}>
-            <Text style={styles.label}>Name: {name}</Text>
-            </View>
-            <View style={styles.dataSection}>
-      <Text style={styles.label}>Relation: {relationship}</Text>
-      </View>
-
-            {/* <View style={{ marginTop: 20 }}>
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginBottom: 10, marginLeft:-145}}>
-{s3Image && <Image source={{ uri: s3Image }} style={{ width: 200, height: 200, marginTop: 10 }} />}
-</View>
-</View> */}
-    <View style={styles.container}>
+              <View style={styles.container}>
       <TouchableOpacity onPress={speak} activeOpacity={0.7}>
         <View style={styles.buttonContainer}>
-          <Feather name="volume-2" size={40} color="black" style={styles.icon} />
-          {/* Use "volume-2" instead of "speaker" */}
+          <Feather name="volume-2" size={40} color="rgb(100, 149, 237)" style={styles.icon} />
+  
         </View>
       </TouchableOpacity>
     </View>
 <View style={styles.containerr}>
       
       <FlatList
+        scrollEnabled={false}
         data={images}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => <Image source={{ uri: item }} style={styles.imagee} />}
       />
     </View>
 
-          </View>
-          </View>
-        ) : (
-          <View style={styles.camcontrol}>
-          <Buttonn title="Take a picture" onPress={takePicture} icon="camera" />
-          </View>
-        )}
+            </View>
+            </View>
+          ) : (
+            <View style={styles.camcontrol}>
+              <Buttonn
+                title="Take a picture"
+                onPress={takePicture}
+                icon="camera"
+              />
+            </View>
+          )}
+        </View>
       </View>
-    </View>
     </ScrollView>
-    </MainDesign5>
+  </MainDesign5>
   );
 }
 
@@ -400,8 +428,9 @@ const styles = StyleSheet.create({
   label: {
     fontStyle: "normal",
     fontWeight: "600",
-    fontSize: 18,
+    fontSize: 20,
     lineHeight: 36,
+    color: '#0047AB',
     paddingVertical: 5,
   },
   allincamviwe : {
@@ -410,7 +439,7 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#E9730F',
+    color: '#0047AB',
     marginLeft: 10,
   },
   but : {
@@ -419,7 +448,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'black',
+    backgroundColor: '#6495ED',
     marginBottom : 10,
 
     
@@ -467,12 +496,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'black',
+    backgroundColor: '#6082B6',
     marginBottom : 10,
     width : 200,
     marginTop : 20,
     marginLeft: 30
-
   },
   topControls: {
     flex: 1,
@@ -484,9 +512,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   imagee: {
-    width: 400,
-    height: 400,
-    resizeMode: 'cover',
-    marginBottom: 20,
+    flex: 1,
+    width: 330,
+    height: 330,
+    resizeMode: 'contain' 
   }
 });
