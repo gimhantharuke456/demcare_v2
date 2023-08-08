@@ -15,6 +15,7 @@ import { Audio } from "expo-av";
 import Button from "../../components/Button";
 import { uploadAudioFile } from "../../services/summarize_service";
 import LoadingIndicator from "../../components/Loading";
+import Voice from "@react-native-voice/voice";
 const RecordPage = () => {
   const [isStopwatchStart, setIsStopwatchStart] = useState(false);
   const [resetStopwatch, setResetStopwatch] = useState(false);
@@ -119,9 +120,9 @@ const RecordPage = () => {
                   const url = await stopRecording();
 
                   const result = await uploadAudioFile(url);
-                  if(result){
-                    Alert.alert('Success', 'Audio uploaded successfully!');
-                  }else{
+                  if (result) {
+                    Alert.alert("Success", "Audio uploaded successfully!");
+                  } else {
                     console.log("result is false");
                   }
                   setLoading(false);
