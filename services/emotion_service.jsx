@@ -5,7 +5,7 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { app } from "../firebaseConfig";
 export const predictEmotion = async (data) => {
   const response = await axios
-    .post(`${baseUrl}/`, data, {
+    .post(`${baseUrl}/predict_emotion`, data, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -14,7 +14,7 @@ export const predictEmotion = async (data) => {
       console.log(`predict emotion from server side failed ${err}`);
       return;
     });
-  return response.data.emotion_label;
+  return response.data.emotion;
 
   return "happy";
 };

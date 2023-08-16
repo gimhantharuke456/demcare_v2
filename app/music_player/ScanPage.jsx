@@ -53,14 +53,11 @@ const ScanPage = () => {
 
       const url = await uploadEmotionImage(image.uri, filename, type);
       console.log(url);
-      // const formData = new FormData();
-      // formData.append("image", {
-      //   uri: image.uri,
-      //   name: filename,
-      //   type: type,
-      // });
-      // const emotion = await predictEmotion(formData);
-      // setPredictedEmotion(emotion);
+      const formData = { url };
+
+      const emotion = await predictEmotion(formData);
+      console.log(`emotion from backend ${emotion}`);
+      setPredictedEmotion(emotion);
     } catch (error) {
       console.log(`predict emotion failed from  front end ${error}`);
     }
