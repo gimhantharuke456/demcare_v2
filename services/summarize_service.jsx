@@ -1,4 +1,5 @@
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+
 import {
   addDoc,
   collection,
@@ -6,10 +7,11 @@ import {
   getDocs,
   doc,
   query,
-  where, deleteDoc
+  where,
+  deleteDoc,
 } from "firebase/firestore";
 import { app, auth } from "../firebaseConfig";
-import SummaryModel from "../models/summary_model"
+import SummaryModel from "../models/summary_model";
 export const uploadAudioFile = async (uri) => {
   console.log(`uri is ${uri}`);
   const response = await fetch(uri);
@@ -61,11 +63,10 @@ export const getDiaries = async () => {
   return diaries;
 };
 
-
 export const deleteDiary = async (id) => {
   const db = getFirestore(db);
   await deleteDoc(doc(db, "recordings", id));
-}
+};
 
 export const getSummaries = async (date) => {
   let summaries = [];
@@ -75,31 +76,30 @@ export const getSummaries = async (date) => {
     where("summered_by", "==", auth.currentUser.uid),
     where("date", "==", date)
   );
-  const querySnapshot
-    = await getDocs(q)
+  const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {
-    summaries.push({ id: doc.id, ...doc.data() })
-  })
-  return summaries
-}
+    summaries.push({ id: doc.id, ...doc.data() });
+  });
+  return summaries;
+};
 
 export const deleteSummary = async (id) => {
   const db = getFirestore(db);
-  await deleteDoc(doc(db, "summaries", id))
-}
+  await deleteDoc(doc(db, "summaries", id));
+};
 
 export const addSummary = async (data, date) => {
   try {
     const d = {
-      "summered_by": auth.currentUser.uid,
-      "summary": data,
-      "date": date
-    }
-    
-    const db = getFirestore(app)
+      summered_by: auth.currentUser.uid,
+      summary: data,
+      date: date,
+    };
+
+    const db = getFirestore(app);
     await addDoc(collection(db, "summaries"), d);
-    return true; 
+    return true;
   } catch (err) {
-    console.log(`add memmory failed ${err}`)
+    console.log(`add memmory failed ${err}`);
   }
-}
+};

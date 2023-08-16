@@ -6,7 +6,10 @@ import { Camera, CameraType } from "expo-camera";
 import Button from "../../components/Button";
 import * as FaceDetector from "expo-face-detector";
 import LoadingIndicator from "../../components/Loading";
-import { predictEmotion } from "../../services/emotion_service";
+import {
+  predictEmotion,
+  uploadEmotionImage,
+} from "../../services/emotion_service";
 import { useRouter } from "expo-router";
 import { saveInStorage } from "../../services/local_storage_service";
 const ScanPage = () => {
@@ -44,17 +47,20 @@ const ScanPage = () => {
     setShouldLoad(true);
     try {
       let filename = image.uri.split("/").pop();
+      console.log("file name is " + filename);
       let match = /\.(\w+)$/.exec(filename);
       let type = match ? `image/${match[1]}` : `image`;
 
-      const formData = new FormData();
-      formData.append("image", {
-        uri: image.uri,
-        name: filename,
-        type: type,
-      });
-      const emotion = await predictEmotion(formData);
-      setPredictedEmotion(emotion);
+      const url = await uploadEmotionImage(image.uri, filename, type);
+      console.log(url);
+      // const formData = new FormData();
+      // formData.append("image", {
+      //   uri: image.uri,
+      //   name: filename,
+      //   type: type,
+      // });
+      // const emotion = await predictEmotion(formData);
+      // setPredictedEmotion(emotion);
     } catch (error) {
       console.log(`predict emotion failed from  front end ${error}`);
     }
@@ -87,14 +93,23 @@ const ScanPage = () => {
               {" "}
               Predicted Emotion : {predictedEmotionFromApi}{" "}
             </Text>
-            <Button text={"Listen to Music"} onPressed={async() => {
-              await saveInStorage("CURRENT_EMOTION",predictedEmotionFromApi.toLowerCase());
-              router.push("/music_player/PlayerScreen")
-            }} />
-            <Button text={"Scan Again"} onPressed={() => {
-              takePic()
-              setPredictedEmotion(null);
-            }} />
+            <Button
+              text={"Listen to Music"}
+              onPressed={async () => {
+                await saveInStorage(
+                  "CURRENT_EMOTION",
+                  predictedEmotionFromApi.toLowerCase()
+                );
+                router.push("/music_player/PlayerScreen");
+              }}
+            />
+            <Button
+              text={"Scan Again"}
+              onPressed={() => {
+                takePic();
+                setPredictedEmotion(null);
+              }}
+            />
           </View>
         }
       />
