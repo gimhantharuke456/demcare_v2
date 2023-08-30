@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
   Alert,
+  ScrollView,
 } from "react-native";
 import Container from "../../components/Container";
 import Title from "../../components/Title";
@@ -13,17 +14,24 @@ import { AuthStartStyles } from "../../styles/AuthStartStyles";
 import { Stopwatch } from "react-native-stopwatch-timer";
 import { Audio } from "expo-av";
 import Button from "../../components/Button";
-import { uploadAudioFile } from "../../services/summarize_service";
+import { useNavigation } from "expo-router";
+import {
+  addSummary,
+  convertToText,
+  summerizeText,
+  uploadAudioFile,
+} from "../../services/summarize_service";
 import LoadingIndicator from "../../components/Loading";
-import Voice from "@react-native-voice/voice";
 const RecordPage = () => {
   const [isStopwatchStart, setIsStopwatchStart] = useState(false);
   const [resetStopwatch, setResetStopwatch] = useState(false);
   const [recording, setRecording] = useState(false);
   const [loding, setLoading] = useState(false);
+  const [convertedText, setConvertedText] = useState("");
+  const [summeriseText, setSummriseText] = useState("");
   const [uri, setUri] = useState("");
   const path = require("../../assets/mic.png");
-
+  const navigate = useNavigation();
   const startRecording = async () => {
     try {
       setRecording(undefined);
@@ -52,9 +60,10 @@ const RecordPage = () => {
       await recording.stopAndUnloadAsync();
       const u = recording.getURI();
       setUri(u);
-
       setRecording(undefined);
       return u;
+    } else {
+      console.log("recording is null");
     }
   };
 
@@ -67,71 +76,132 @@ const RecordPage = () => {
       child={
         <View style={{ flex: 1, alignItems: "center" }}>
           <Title />
-          <View style={AuthStartStyles.card}>
-            <Image
+          {!summeriseText && !convertedText && (
+            <View style={AuthStartStyles.card}>
+              <Image
+                style={{
+                  width: 250,
+                  height: 250,
+                  resizeMode: "cover",
+                }}
+                source={path}
+              />
+              <Stopwatch
+                laps={true}
+                msecs={true}
+                start={isStopwatchStart}
+                reset={resetStopwatch}
+                options={options}
+                getTime={(time) => {}}
+              />
+              <TouchableHighlight
+                onPress={() => {
+                  setIsStopwatchStart(!isStopwatchStart);
+                  if (isStopwatchStart) {
+                    stopRecording();
+                  } else {
+                    startRecording();
+                  }
+                  setResetStopwatch(false);
+                }}
+              >
+                <Text style={styles.buttonText}>
+                  {!isStopwatchStart ? "START" : "STOP"}
+                </Text>
+              </TouchableHighlight>
+              <TouchableHighlight
+                onPress={() => {
+                  setIsStopwatchStart(false);
+                  setResetStopwatch(true);
+                  setRecording(undefined);
+                }}
+              >
+                <Text style={styles.buttonText}>RESET</Text>
+              </TouchableHighlight>
+            </View>
+          )}
+          {convertedText && !summeriseText && (
+            <View
               style={{
-                width: 250,
-                height: 250,
-                resizeMode: "cover",
-              }}
-              source={path}
-            />
-            <Stopwatch
-              laps={true}
-              msecs={true}
-              start={isStopwatchStart}
-              reset={resetStopwatch}
-              options={options}
-              getTime={(time) => {}}
-            />
-            <TouchableHighlight
-              onPress={() => {
-                setIsStopwatchStart(!isStopwatchStart);
-                if (isStopwatchStart) {
-                  stopRecording();
-                } else {
-                  startRecording();
-                }
-                setResetStopwatch(false);
+                ...AuthStartStyles.card,
+                width: "90%",
               }}
             >
-              <Text style={styles.buttonText}>
-                {!isStopwatchStart ? "START" : "STOP"}
+              <Text style={{ fontSize: 24 }}>Converted Text</Text>
+              <Text style={{ marginTop: 8, fontSize: 18 }}>
+                {convertedText}
               </Text>
-            </TouchableHighlight>
-            <TouchableHighlight
-              onPress={() => {
-                setIsStopwatchStart(false);
-                setResetStopwatch(true);
-                setRecording(undefined);
+            </View>
+          )}
+          {summeriseText && (
+            <View
+              style={{
+                ...AuthStartStyles.card,
+                width: "90%",
               }}
             >
-              <Text style={styles.buttonText}>RESET</Text>
-            </TouchableHighlight>
-          </View>
-
-          <Button
-            text={"Save to summarize"}
-            onPressed={async () => {
-              try {
-                if (recording) {
+              <Text style={{ fontSize: 24 }}>Summerize Text</Text>
+              <View style={{ height: 16 }} />
+              <ScrollView>
+                <Text style={{ fontSize: 18 }}>{summeriseText}</Text>
+              </ScrollView>
+            </View>
+          )}
+          {!convertedText && !summeriseText && (
+            <Button
+              text={"Convert to text"}
+              onPressed={async () => {
+                try {
                   setLoading(true);
                   setIsStopwatchStart(false);
                   const url = await stopRecording();
 
-                  const result = await uploadAudioFile(url);
-                  if (result) {
-                    Alert.alert("Success", "Audio uploaded successfully!");
-                  } else {
-                    console.log("result is false");
+                  if (uri) {
+                    const result = await uploadAudioFile(uri);
+
+                    if (result) {
+                      const t = await convertToText(result);
+                      setConvertedText(t);
+                      //  Alert.alert("Success", "Audio uploaded successfully!");
+                    } else {
+                      Alert.alert("Error", "Audio uploading failed!");
+                    }
                   }
                   setLoading(false);
+                } catch (err) {
+                  Alert.alert("Error", `${err}`);
+                  setLoading(false);
                 }
-              } catch (err) {
-                console.log(err);
-              }
-            }}
-          />
+              }}
+            />
+          )}
+          {convertedText && !summeriseText && (
+            <Button
+              text={"Summarize"}
+              onPressed={async () => {
+                setLoading(true);
+                const t = await summerizeText(convertedText);
+
+                setSummriseText(t.toString());
+                setLoading(false);
+              }}
+            />
+          )}
+          {summeriseText && (
+            <Button
+              onPressed={async () => {
+                setLoading(true);
+                await addSummary(summeriseText);
+                setLoading(false);
+                Alert.alert(
+                  "Success",
+                  "Your summerization uploaded successfully!"
+                );
+                navigate.goBack();
+              }}
+              text={"Save to later"}
+            />
+          )}
         </View>
       }
     />
