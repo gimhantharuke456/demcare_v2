@@ -52,7 +52,7 @@ const ScanPage = () => {
       let type = match ? `image/${match[1]}` : `image`;
 
       const url = await uploadEmotionImage(image.uri, filename, type);
-      console.log(url);
+
       const formData = { url };
 
       const emotion = await predictEmotion(formData);
@@ -88,7 +88,7 @@ const ScanPage = () => {
               }}
             >
               {" "}
-              Predicted Emotion : {predictedEmotionFromApi}{" "}
+              Your Emotion : {predictedEmotionFromApi.toUpperCase()}{" "}
             </Text>
             <Button
               text={"Listen to Music"}

@@ -14,9 +14,9 @@ export const predictEmotion = async (data) => {
       console.log(`predict emotion from server side failed ${err}`);
       return;
     });
-  return response.data.emotion;
+  let emotion = response.data.emotion;
 
-  return "happy";
+  return filterEmotion(emotion);
 };
 
 export const uploadEmotionImage = async (uri, filename, type) => {
@@ -40,4 +40,26 @@ export const uploadEmotionImage = async (uri, filename, type) => {
       console.log(`upload file page ${err}`);
       return null;
     });
+};
+
+const filterEmotion = (emotion) => {
+  const e = emotion.toLowerCase();
+  switch (e) {
+    case "happy":
+      return "happy";
+    case "sad":
+      return "sad";
+    case "fear":
+      return "angry";
+    case "neutral":
+      return "neutral";
+    case "disgust":
+      return "disgust";
+    case "surprise":
+      return "angry";
+    case "angry":
+      return "angry";
+    default:
+      return "neutral";
+  }
 };
