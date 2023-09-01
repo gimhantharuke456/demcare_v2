@@ -152,9 +152,7 @@ const ProcessAudioPage = () => {
                 onPress={async () => {
                   setShouldLoad(true);
                   const text = await getFromStorage("SELECTED_CONVERTED_TEXT");
-                  const t = await summerizeText(
-                    "DevOps Engineer at LSEG is responsible for the configuration and maintenance of the Continuous Integration and Continues Delivery pipelines which underpins our SDLC lifecycle. They also build tools & operational processes to improve productivity of the entire organization.The intern is expected to work independently with guidance provided by our senior DevOps Engineers in carrying out day to day duties. The ideal candidate will work closely with cross functional teams to implement, test, maintain and deploy different DevOps tools."
-                  );
+                  const t = await summerizeText(text);
                   console.log(t);
                   setSummerisedText(t);
                   setShouldLoad(false);
