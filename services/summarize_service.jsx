@@ -92,13 +92,12 @@ export const deleteDiary = async (id) => {
   await deleteDoc(doc(db, "recordings", id));
 };
 
-export const getSummaries = async (date) => {
+export const getSummaries = async () => {
   let summaries = [];
   const db = getFirestore(db);
   const q = query(
     collection(db, "summaries"),
-    where("summered_by", "==", auth.currentUser.uid),
-    where("date", "==", date)
+    where("summered_by", "==", auth.currentUser.uid)
   );
   const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {

@@ -1,42 +1,34 @@
-import React, { useEffect, useState } from "react";
+import { FlatList, View, Text } from "react-native";
 import Container from "../../components/Container";
-import { View, FlatList, Text } from "react-native";
 import Title from "../../components/Title";
+import { useEffect, useState } from "react";
 import LoadingIndicator from "../../components/Loading";
-import {
-  getFromStorage,
-  saveInStorage,
-} from "../../services/local_storage_service";
-import {
-  deleteSummary,
-  getConvertedTexts,
-} from "../../services/summarize_service";
+import { getSummaries } from "../../services/summarize_service";
 import { MaterialIcons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { FontAwesome } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-const SummaryList = () => {
+import { saveInStorage } from "../../services/local_storage_service";
+const CareGiverMemmoris = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [summaries, setSummaries] = useState([]);
+  const getData = async () => {
+    setLoading(true);
+    getSummaries()
+      .then((summaries) => {
+        setSummaries(summaries);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+    setLoading(false);
+  };
   useEffect(() => {
     getData();
   }, []);
-
-  const getData = async () => {
-    await getFromStorage("selected_date").then((date) => {
-      if (date) {
-        setLoading(true);
-        getConvertedTexts(date).then((summaries) => {
-          setSummaries(summaries);
-        });
-        setLoading(false);
-      } else {
-        console.log("date not found");
-      }
-    });
-  };
   const renderListItem = ({ item }) => (
     <View
       style={{
@@ -61,8 +53,7 @@ const SummaryList = () => {
           color: "#000080",
         }}
       >
-        {" "}
-        {item.date}{" "}
+        {item.date}
       </Text>
       <TouchableOpacity
         onPress={async () => {
@@ -74,7 +65,7 @@ const SummaryList = () => {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={async () => {
-          await saveInStorage("selected_summary", item.text);
+          await saveInStorage("selected_summary", item.summary);
           router.push("/audio_diary/Summary");
         }}
       >
@@ -110,4 +101,4 @@ const SummaryList = () => {
   );
 };
 
-export default SummaryList;
+export default CareGiverMemmoris;

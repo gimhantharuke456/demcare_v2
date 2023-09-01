@@ -15,12 +15,13 @@ const AuthStart = () => {
   const [currentUser, setCurrentUser] = useState(null);
   useEffect(() => {
     (async () => {
-      if (await getFromStorage("email") != null) {
+      if ((await getFromStorage("email")) != null) {
         setCurrentUser(auth.currentUser);
         const userType = await getFromStorage("USER_TYPE");
         if (userType === "PATIENT") {
           router.push("/PatientHome");
         } else {
+          router.push("/CareGiverHome");
         }
       } else {
         console.log("current user is null");

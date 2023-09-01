@@ -54,42 +54,7 @@ const ProcessAudioPage = () => {
       finishAlert();
     }
   };
-  const finishAlert = () => {
-    Alert.alert(
-      "Hey",
-      "Do you want to listen this music again ?",
-      [
-        {
-          text: "Yes",
-          onPress: async () => {
-            setShouldLoad(true);
-            getFromStorage("SELECTED_URL").then(async (url) => {
-              const { sound } = await Audio.Sound.createAsync({ uri: url });
-              setSound(sound);
-              sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
-              setShouldLoad(false);
-            });
-            await playSound();
-            return sound
-              ? () => {
-                  sound.unloadAsync();
-                }
-              : undefined;
-          },
-        },
-        {
-          text: "No",
-          onPress: async () => {
-            await saveInStorage("CURRENT_EMOTION", null);
-            router.back();
-          },
-          style: "cancel",
-        },
-      ],
-      { cancelable: false }
-      //clicking out side of alert will not cancel
-    );
-  };
+  const finishAlert = () => {};
   const playSound = async (url) => {
     setIsPlaying(true);
     await sound.playAsync();
