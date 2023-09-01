@@ -18,10 +18,12 @@ import { useNavigation } from "expo-router";
 import {
   addSummary,
   convertToText,
+  saveConvertedText,
   summerizeText,
   uploadAudioFile,
 } from "../../services/summarize_service";
 import LoadingIndicator from "../../components/Loading";
+import { getFromStorage } from "../../services/local_storage_service";
 const RecordPage = () => {
   const [isStopwatchStart, setIsStopwatchStart] = useState(false);
   const [resetStopwatch, setResetStopwatch] = useState(false);
@@ -175,23 +177,13 @@ const RecordPage = () => {
               }}
             />
           )}
-          {convertedText && !summeriseText && (
+          {convertedText && (
             <Button
-              text={"Summarize"}
+              text={"Save to later"}
               onPressed={async () => {
                 setLoading(true);
-                const t = await summerizeText(convertedText);
-
-                setSummriseText(t.toString());
-                setLoading(false);
-              }}
-            />
-          )}
-          {summeriseText && (
-            <Button
-              onPressed={async () => {
-                setLoading(true);
-                await addSummary(summeriseText);
+                const url = await getFromStorage("url");
+                await saveConvertedText(url, convertedText);
                 setLoading(false);
                 Alert.alert(
                   "Success",
@@ -199,7 +191,6 @@ const RecordPage = () => {
                 );
                 navigate.goBack();
               }}
-              text={"Save to later"}
             />
           )}
         </View>

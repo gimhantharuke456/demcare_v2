@@ -14,6 +14,7 @@ import { app, auth } from "../firebaseConfig";
 import SummaryModel from "../models/summary_model";
 import axios from "axios";
 import { baseUrl } from "../constants";
+import { saveInStorage } from "./local_storage_service";
 export const uploadAudioFile = async (uri) => {
   console.log(`uri is ${uri}`);
   const response = await fetch(uri);
@@ -27,6 +28,7 @@ export const uploadAudioFile = async (uri) => {
     .then(async (snapshot) => {
       console.log("Uploaded a blob or file!");
       const url = await getDownloadURL(storageRef);
+      await saveInStorage("url", url);
       //console.log(url);
       // const data = {
       //   uploaded_at: Date.now(),
@@ -136,6 +138,23 @@ export const summerizeText = async (text) => {
       console.log(`summerize failed ${err}`);
       return `Summerize failed ${err}`;
     });
+};
+
+export const saveConvertedText = async (url, text) => {
+  try {
+    const date = formatDate(new Date());
+
+    const d = {
+      summered_by: auth.currentUser.uid,
+      text: text,
+      url: url,
+      date: date,
+    };
+    const db = getFirestore(app);
+    await addDoc(collection(db, "converted_texts"), d);
+  } catch (err) {
+    console.log(`add memmory failed ${err}`);
+  }
 };
 
 function formatDate(date) {
