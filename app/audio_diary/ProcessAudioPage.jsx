@@ -4,10 +4,12 @@ import Container from "../../components/Container";
 import { AuthStartStyles } from "../../styles/AuthStartStyles";
 import CustomButton from "../../components/CustomButton";
 import Title from "../../components/Title";
-import { summerizeText } from "../../services/summarize_service";
+import { addSummary, summerizeText } from "../../services/summarize_service";
 import { getFromStorage } from "../../services/local_storage_service";
 import LoadingIndicator from "../../components/Loading";
 import { Audio } from "expo-av";
+import Button from "../../components/Button";
+import { useNavigation } from "expo-router";
 const ProcessAudioPage = () => {
   const [summerisedText, setSummerisedText] = useState("");
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -15,7 +17,7 @@ const ProcessAudioPage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
-
+  const navigate = useNavigation();
   useEffect(() => {
     setShouldLoad(true);
     getFromStorage("SELECTED_URL").then(async (url) => {
@@ -129,6 +131,17 @@ const ProcessAudioPage = () => {
                     <ScrollView>
                       <Text style={{ fontSize: 18 }}>{summerisedText}</Text>
                     </ScrollView>
+                    <Button
+                      onPressed={async () => {
+                        setShouldLoad(true);
+                        await addSummary(summerisedText);
+                        Alert.alert("Hey", "Summary saved successfully");
+
+                        setShouldLoad(false);
+                        navigate.goBack();
+                      }}
+                      text={"Save"}
+                    />
                   </View>
                 }
               </View>
