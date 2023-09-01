@@ -3,7 +3,12 @@ import Container from "../../components/Container";
 import { View, FlatList, Text } from "react-native";
 import Title from "../../components/Title";
 import { List } from "react-native-paper";
-import { deleteDiary, getDiaries } from "../../services/summarize_service";
+import {
+  deleteConvertedText,
+  deleteDiary,
+  getConvertedTexts,
+  getDiaries,
+} from "../../services/summarize_service";
 import { Ionicons } from "@expo/vector-icons";
 import moment from "moment";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -19,7 +24,7 @@ const RecordedLists = () => {
     (async () => {
       setLoad(true);
       setData([]);
-      const t = await getDiaries();
+      const t = await getConvertedTexts();
       setData(t);
       setLoad(false);
     })();
@@ -55,7 +60,7 @@ const RecordedLists = () => {
       <TouchableOpacity
         onPress={async () => {
           setLoad(true);
-          await deleteDiary(item.id);
+          await deleteConvertedText(item.id);
           setData([]);
           const t = await getDiaries();
           setData(t);
@@ -67,6 +72,7 @@ const RecordedLists = () => {
       <TouchableOpacity
         onPress={async () => {
           await saveInStorage("SELECTED_URL", item.url);
+          await saveInStorage("SELECTED_CONVERTED_TEXT", item.text);
           router.push("/audio_diary/ProcessAudioPage");
         }}
       >

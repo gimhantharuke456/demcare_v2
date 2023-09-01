@@ -68,6 +68,25 @@ export const getDiaries = async () => {
   return diaries;
 };
 
+export const getConvertedTexts = async () => {
+  let diaries = [];
+  const db = getFirestore(db);
+  const q = query(
+    collection(db, "converted_texts"),
+    where("summered_by", "==", auth.currentUser.uid)
+  );
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    diaries.push({ id: doc.id, ...doc.data() });
+  });
+
+  return diaries;
+};
+
+export const deleteConvertedText = async (id) => {
+  const db = getFirestore(db);
+  await deleteDoc(doc(db, "converted_texts", id));
+};
 export const deleteDiary = async (id) => {
   const db = getFirestore(db);
   await deleteDoc(doc(db, "recordings", id));
