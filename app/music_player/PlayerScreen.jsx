@@ -14,6 +14,7 @@ import { fetchAudio } from "../../services/music_service";
 import { useRouter } from "expo-router";
 import LoadingIndicator from "../../components/Loading";
 import { saveInStorage } from "../../services/local_storage_service";
+import ImageCarousel from "../../components/ImageCarausel";
 //import ImageCarausel from "../../components/ImageCarausel";
 
 const PlayerScreen = () => {
@@ -129,7 +130,10 @@ const PlayerScreen = () => {
       child={
         <View style={{ flex: 1, alignItems: "center" }}>
           <Title />
-          <View style={styles.imageWrapper}>{/* <ImageCarausel /> */}</View>
+
+          <View style={styles.imageWrapper}>
+            <ImageCarousel />
+          </View>
           <TouchableOpacity
             onPress={!isPlaying ? playSound : pauseSound}
             style={styles.button}
