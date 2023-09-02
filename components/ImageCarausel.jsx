@@ -31,6 +31,7 @@ const ImageCarousel = () => {
       itemWidth={250}
       autoplay={true}
       autoplayInterval={4000}
+      loop={true}
     />
   );
 };
@@ -44,8 +45,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 400,
+    height: 350,
   },
 });
 

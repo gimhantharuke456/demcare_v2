@@ -6,6 +6,7 @@ import {
   Image,
   StyleSheet,
   Alert,
+  ImageBackground,
 } from "react-native";
 import { Audio } from "expo-av";
 import Container from "../../components/Container";
@@ -16,7 +17,6 @@ import LoadingIndicator from "../../components/Loading";
 import { saveInStorage } from "../../services/local_storage_service";
 import ImageCarousel from "../../components/ImageCarausel";
 //import ImageCarausel from "../../components/ImageCarausel";
-
 const PlayerScreen = () => {
   const [sound, setSound] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,8 +32,9 @@ const PlayerScreen = () => {
       [
         {
           text: "Yes",
-          onPress: () => {
-            playSound();
+          onPress: async () => {
+            setIsPlaying(true);
+            await playSound();
           },
         },
         {
@@ -45,7 +46,7 @@ const PlayerScreen = () => {
           style: "cancel",
         },
       ],
-      { cancelable: false }
+      { cancelable: true }
       //clicking out side of alert will not cancel
     );
   };
@@ -94,8 +95,8 @@ const PlayerScreen = () => {
     };
   }, [sound, isPlaying]);
 
-  const onPlaybackStatusUpdate = (status) => {
-    if (status.durationMillis === status.positionMillis) {
+  const onPlaybackStatusUpdate = async (status) => {
+    if (status.durationMillis === status.positionMillis && !isPlaying) {
       setIsPlaying(false);
       finishAlert();
     }
@@ -131,9 +132,15 @@ const PlayerScreen = () => {
         <View style={{ flex: 1, alignItems: "center" }}>
           <Title />
 
-          <View style={styles.imageWrapper}>
-            <ImageCarousel />
-          </View>
+          <ImageBackground
+            style={styles.imageWrapper}
+            source={require("../../assets/music.png")}
+          >
+            <View style={styles.imageWrapper}>
+              <ImageCarousel />
+            </View>
+          </ImageBackground>
+          <View style={{ flex: 1 }} />
           <TouchableOpacity
             onPress={!isPlaying ? playSound : pauseSound}
             style={styles.button}
@@ -178,13 +185,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   imageWrapper: {
-    width: 350,
+    width: 400,
     height: 350,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 32,
   },
   image: {
     resizeMode: "cover",
-    width: 350,
-    height: 350,
+    width: "100%",
+    height: "100%",
   },
 });
 

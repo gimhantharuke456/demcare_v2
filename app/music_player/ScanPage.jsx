@@ -144,7 +144,9 @@ const ScanPage = () => {
           )}
           <Button
             text={"SCAN"}
-            onPressed={() => {
+            onPressed={async () => {
+              // await saveInStorage("CURRENT_EMOTION", "happy");
+              // router.push("/music_player/PlayerScreen");
               takePic();
             }}
           />
