@@ -93,6 +93,7 @@ export const deleteDiary = async (id) => {
 };
 
 export const getSummaries = async () => {
+  console.log("get summaries called " + auth.currentUser.uid);
   let summaries = [];
   const db = getFirestore(db);
   const q = query(
@@ -100,9 +101,11 @@ export const getSummaries = async () => {
     where("summered_by", "==", auth.currentUser.uid)
   );
   const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
+  console.log("snap shots gotted " + querySnapshot.docs.length);
+  querySnapshot.docs.forEach((doc) => {
     summaries.push({ id: doc.id, ...doc.data() });
   });
+  console.log("summary length " + summaries.length);
   return summaries;
 };
 

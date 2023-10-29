@@ -27,7 +27,7 @@ const RegisterPage = () => {
     <Container
       child={
         <View style={{ flex: 1, alignItems: "center" }}>
-          <Title is_login={true}/>
+          <Title is_login={true} />
           <View style={{ ...AuthStartStyles.card, height: 500 }}>
             <Text style={{ fontSize: 32, ...AuthStartStyles.text }}>
               REGISTER
@@ -59,26 +59,26 @@ const RegisterPage = () => {
             />
             <Button
               onPressed={async () => {
-              if(email && password && name && age){
-                if(isValidEmail(email) ){
-                  if(ageValidator(age)){
-                    setLoading(true);
-                const result = await register(email, password, name, age);
-                if (result) {
-                  router.push("/PatientHome");
-                }else{
-                  console.log("result is false")
-                }
-                setLoading(false);
-                  }else{
-                    Alert.alert("Ooops","Patient must age between 40-80")
+                if (email && password && name && age) {
+                  if (isValidEmail(email)) {
+                    if (ageValidator(age)) {
+                      setLoading(true);
+                      const result = await register(email, password, name, age);
+                      if (result) {
+                        router.push("/LoginPage");
+                      } else {
+                        console.log("result is false");
+                      }
+                      setLoading(false);
+                    } else {
+                      Alert.alert("Ooops", "Patient must age between 40-80");
+                    }
+                  } else {
+                    Alert.alert("Hey", "Please enter valid email");
                   }
-                }else{
-                  Alert.alert("Hey","Please enter valid email")
+                } else {
+                  Alert.alert("Hey", "Fill all the fields");
                 }
-              }else{
-                Alert.alert("Hey","Fill all the fields")
-              }
               }}
               text={"REGISTER"}
             />

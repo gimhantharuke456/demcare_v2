@@ -16,7 +16,7 @@ import { useRouter } from "expo-router";
 import LoadingIndicator from "../../components/Loading";
 import { saveInStorage } from "../../services/local_storage_service";
 import ImageCarousel from "../../components/ImageCarausel";
-//import ImageCarausel from "../../components/ImageCarausel";
+
 const PlayerScreen = () => {
   const [sound, setSound] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -28,7 +28,7 @@ const PlayerScreen = () => {
   const finishAlert = () => {
     Alert.alert(
       "Hey",
-      "Do you want to listen this music again ?",
+      "Do you want to listen to this music again?",
       [
         {
           text: "Yes",
@@ -47,9 +47,9 @@ const PlayerScreen = () => {
         },
       ],
       { cancelable: true }
-      //clicking out side of alert will not cancel
     );
   };
+
   useEffect(() => {
     setLoading(true);
     fetchAudio()
@@ -60,11 +60,11 @@ const PlayerScreen = () => {
           const url = item.getUrl();
           const { sound } = await Audio.Sound.createAsync({ uri: url });
           setSound(sound);
-          sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
+          setLoading(false);
         } else {
           console.log("url not found");
+          setLoading(false);
         }
-        setLoading(false);
       })
       .catch((err) => {
         console.log(`fetch audio from front failed ${err}`);
@@ -102,10 +102,11 @@ const PlayerScreen = () => {
     }
   };
 
-  const playSound = async (url) => {
+  const playSound = async () => {
     setIsPlaying(true);
     await sound.playAsync();
     console.log("song is playing");
+    sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
   };
 
   const pauseSound = async () => {

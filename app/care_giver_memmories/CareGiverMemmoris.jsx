@@ -9,7 +9,11 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { FontAwesome } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { saveInStorage } from "../../services/local_storage_service";
+import {
+  saveInStorage,
+  getFromStorage,
+} from "../../services/local_storage_service";
+import { auth } from "../../firebaseConfig";
 const CareGiverMemmoris = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -29,6 +33,7 @@ const CareGiverMemmoris = () => {
   useEffect(() => {
     getData();
   }, []);
+  console.log(auth.currentUser?.uid);
   const renderListItem = ({ item }) => (
     <View
       style={{
@@ -65,7 +70,11 @@ const CareGiverMemmoris = () => {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={async () => {
-          await saveInStorage("selected_summary", item.summary);
+          const isPatient = await getFromStorage("USER_TYPE");
+
+          const t = isPatient === "PATIENT" ? item.summary : item.text;
+          console.log(t);
+          await saveInStorage("selected_summary", t);
           router.push("/audio_diary/Summary");
         }}
       >

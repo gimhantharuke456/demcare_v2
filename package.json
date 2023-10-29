@@ -32,7 +32,7 @@
     "metro-core": "^0.77.0",
     "moment": "^2.29.4",
     "react": "18.2.0",
-    "react-native": "0.71.8",
+    "react-native": "0.71.14",
     "react-native-aws3": "^0.0.9",
     "react-native-calendars": "^1.1300.0",
     "react-native-gesture-handler": "~2.9.0",
