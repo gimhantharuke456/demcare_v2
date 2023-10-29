@@ -114,13 +114,14 @@ export const deleteSummary = async (id) => {
   await deleteDoc(doc(db, "summaries", id));
 };
 
-export const addSummary = async (data) => {
+export const addSummary = async (data, text) => {
   try {
     const date = formatDate(new Date());
     const d = {
       summered_by: auth.currentUser.uid,
       summary: data,
       date: date,
+      text: text,
     };
 
     const db = getFirestore(app);

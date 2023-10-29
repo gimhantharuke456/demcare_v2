@@ -99,8 +99,16 @@ const ProcessAudioPage = () => {
                     <Button
                       onPressed={async () => {
                         setShouldLoad(true);
-                        await addSummary(summerisedText);
-                        Alert.alert("Hey", "Summary saved successfully");
+                        try {
+                          const text = await getFromStorage(
+                            "SELECTED_CONVERTED_TEXT"
+                          );
+                          // console.log(text);
+                          await addSummary(summerisedText, text);
+                          Alert.alert("Hey", "Summary saved successfully");
+                        } catch (err) {
+                          Alert.alert("OOps", "Summary saving failed");
+                        }
 
                         setShouldLoad(false);
                         navigate.goBack();

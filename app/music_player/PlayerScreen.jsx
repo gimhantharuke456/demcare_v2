@@ -33,15 +33,20 @@ const PlayerScreen = () => {
         {
           text: "Yes",
           onPress: async () => {
-            setIsPlaying(true);
             await playSound();
+            setIsPlaying(true);
           },
         },
         {
           text: "No",
           onPress: async () => {
-            await saveInStorage("CURRENT_EMOTION", null);
-            router.back();
+            try {
+              await saveInStorage("CURRENT_EMOTION", "");
+
+              router.push("/audio_diary/AudioDiaryHome");
+            } catch (error) {
+              console.log(error);
+            }
           },
           style: "cancel",
         },
@@ -58,6 +63,7 @@ const PlayerScreen = () => {
         const item = audios[randomIndex];
         if (item) {
           const url = item.getUrl();
+          console.log(`music player going to play ${url}`);
           const { sound } = await Audio.Sound.createAsync({ uri: url });
           setSound(sound);
           setLoading(false);
@@ -96,6 +102,7 @@ const PlayerScreen = () => {
   }, [sound, isPlaying]);
 
   const onPlaybackStatusUpdate = async (status) => {
+    console.log(`${isPlaying}`);
     if (status.durationMillis === status.positionMillis && !isPlaying) {
       setIsPlaying(false);
       finishAlert();
@@ -143,7 +150,14 @@ const PlayerScreen = () => {
           </ImageBackground>
           <View style={{ flex: 1 }} />
           <TouchableOpacity
-            onPress={!isPlaying ? playSound : pauseSound}
+            onPress={() => {
+              console.log(`currently music state ${isPlaying}`);
+              if (isPlaying) {
+                pauseSound();
+              } else {
+                playSound();
+              }
+            }}
             style={styles.button}
           >
             <Text style={styles.buttonText}>

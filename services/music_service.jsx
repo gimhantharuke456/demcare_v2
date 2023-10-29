@@ -7,10 +7,10 @@ import { getFromStorage } from "./local_storage_service";
 export const fetchAudio = async () => {
   let audios = [];
   const emotion = await getFromStorage("CURRENT_EMOTION");
-  console.log(`current emotion is ${emotion}`);
+
   const age = await getFromStorage("age");
   const ageRange = ageRangeGetter(age);
-
+  console.log(`current emotion is ${emotion} age is ${age}`);
   const q = query(
     collection(db, "audio"),
     where("category", "==", emotion),
