@@ -31,6 +31,7 @@ const RecordPage = () => {
   const [loding, setLoading] = useState(false);
   const [convertedText, setConvertedText] = useState("");
   const [summeriseText, setSummriseText] = useState("");
+  const [recorededText,setRecorededText] = useState("")
   const [uri, setUri] = useState("");
   const path = require("../../assets/mic.png");
   const navigate = useNavigation();
@@ -183,7 +184,7 @@ const RecordPage = () => {
               onPressed={async () => {
                 setLoading(true);
                 const url = await getFromStorage("url");
-                await saveConvertedText(url, convertedText);
+                await saveConvertedText(url, convertedText,);
                 setLoading(false);
                 Alert.alert(
                   "Success",

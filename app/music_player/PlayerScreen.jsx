@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import LoadingIndicator from "../../components/Loading";
 import { saveInStorage } from "../../services/local_storage_service";
 import ImageCarousel from "../../components/ImageCarausel";
+import { Button } from "react-native-paper";
 
 const PlayerScreen = () => {
   const [sound, setSound] = useState(null);
@@ -24,7 +25,8 @@ const PlayerScreen = () => {
   const [duration, setDuration] = useState(0);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
+  const [musics, setMusics] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
   const finishAlert = () => {
     Alert.alert(
       "Hey",
@@ -58,6 +60,7 @@ const PlayerScreen = () => {
     setLoading(true);
     fetchAudio()
       .then(async (audios) => {
+        setMusics(audios);
         const randomIndex = Math.floor(Math.random() * audios.length);
         const item = audios[randomIndex];
         if (item) {
@@ -119,8 +122,7 @@ const PlayerScreen = () => {
     setLoading(true);
     await fetchAudio()
       .then(async (audios) => {
-        const randomIndex = Math.floor(Math.random() * audios.length);
-        const item = audios[randomIndex];
+        const item = audios[activeIndex];
         if (item) {
           const url = item.getUrl();
           console.log(`music player going to play ${url}`);
@@ -172,13 +174,47 @@ const PlayerScreen = () => {
             </View>
           </ImageBackground>
           <View style={{ flex: 1 }} />
+          <View style={{ height: 100 }}>
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Button
+                style={{ backgroundColor: "#5BD2EC", color: "white" }}
+                onPress={() => {
+                  if (activeIndex > 0) {
+                    setActiveIndex(activeIndex - 1);
+                  }
+                }}
+              >
+                <Text>{"<"}</Text>
+              </Button>
+              <Text style={{ margin: 16 }} key={index}>{`Track ${
+                activeIndex + 1
+              }`}</Text>
+              <Button
+                style={{ backgroundColor: "#5BD2EC", color: "white" }}
+                onPress={() => {
+                  if (activeIndex < musics.length) {
+                    setActiveIndex(activeIndex + 1);
+                  }
+                }}
+              >
+                <Text>{">"}</Text>
+              </Button>
+            </View>
+          </View>
           <TouchableOpacity
             onPress={() => {
               console.log(`currently music state ${isPlaying}`);
               if (isPlaying) {
                 pauseSound();
               } else {
-                playSound();
+                replay();
               }
             }}
             style={styles.button}
