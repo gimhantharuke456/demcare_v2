@@ -33,8 +33,7 @@ const PlayerScreen = () => {
         {
           text: "Yes",
           onPress: async () => {
-            await playSound();
-            setIsPlaying(true);
+            await replay();
           },
         },
         {
@@ -43,7 +42,7 @@ const PlayerScreen = () => {
             try {
               await saveInStorage("CURRENT_EMOTION", "");
 
-              router.push("/audio_diary/AudioDiaryHome");
+              router.push("/music_player/ScanPage");
             } catch (error) {
               console.log(error);
             }
@@ -114,6 +113,30 @@ const PlayerScreen = () => {
     await sound.playAsync();
     console.log("song is playing");
     sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
+  };
+
+  const replay = async () => {
+    setLoading(true);
+    await fetchAudio()
+      .then(async (audios) => {
+        const randomIndex = Math.floor(Math.random() * audios.length);
+        const item = audios[randomIndex];
+        if (item) {
+          const url = item.getUrl();
+          console.log(`music player going to play ${url}`);
+          const { sound } = await Audio.Sound.createAsync({ uri: url });
+          setSound(sound);
+          setLoading(false);
+        } else {
+          console.log("url not found");
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.log(`fetch audio from front failed ${err}`);
+        setLoading(false);
+      });
+    setLoading(false);
   };
 
   const pauseSound = async () => {
